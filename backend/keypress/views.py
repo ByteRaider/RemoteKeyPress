@@ -2,11 +2,13 @@ from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 import json
 import pyautogui
+#from pywinauto.application import Application
+import pywinauto
+#from pywinauto import Desktop
 from rest_framework.response import Response
-from pywinauto.application import Application
 from rest_framework.views import APIView
 from rest_framework import status
-from .serializers import CheckboxActionSerializer
+from .serializers import CheckboxActionSerializer, ApplicationListSerializer
 
 @csrf_exempt
 def trigger_key(request):
@@ -22,6 +24,23 @@ def trigger_key(request):
         except json.JSONDecodeError:
             return JsonResponse({'status': 'fail', 'message': 'Invalid JSON'}, status=status.HTTP_400_BAD_REQUEST)
     return JsonResponse({'status': 'fail', 'message': 'Invalid request method'}, status=status.HTTP_405_METHOD_NOT_ALLOWED)
+
+class ListApplicationsView(APIView):
+    def get(self, request):
+        windows = Desktop(backend="uia").windows()
+        window_titles = [window.window_text() for window in windows]
+        serializer = ApplicationListSerializer({'windows': window_titles})
+        return Response(serializer.data)
+
+class SelectApplicationView(APIView):
+    def post(self, request):
+        title = request.data.get('title')
+        try:
+            app = Application().connect(title=title)
+            request.session['selected_app'] = title
+            return Response({'status': 'success', 'message': f'Application {title} selected.'})
+        except Exception as e:
+            return Response({'status': 'error', 'message': str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
 
 class CheckboxControlView(APIView):
