@@ -45,10 +45,10 @@ class SelectApplicationView(APIView):
 
 class CheckboxControlView(APIView):
     def post(self, request):
-        serializer = CheckboxActionSerializer(data=request.data)
+        serializer = CheckboxActionSerializer(data=request.data, many=True)
         if serializer.is_valid():
-            title = serializer.validated_data['title']
-            action = serializer.validated_data['action']
+            #title = serializer.validated_data['title']
+            #action = serializer.validated_data['action']
 
             try:
                 # Connect to the application
@@ -56,13 +56,32 @@ class CheckboxControlView(APIView):
                 main_window = app.window(title="Your Application Title")
                 
                 # Find the checkbox and perform the action
-                checkbox = main_window.child_window(title=title, control_type="CheckBox")
-                if action == 'check' and not checkbox.is_checked():
-                    checkbox.check()
-                elif action == 'uncheck' and checkbox.is_checked():
-                    checkbox.uncheck()
+    #            checkbox = main_window.child_window(title=title, control_type="CheckBox")
+    #            if action == 'check' and not checkbox.is_checked():
+    #                checkbox.check()
+    #            elif action == 'uncheck' and checkbox.is_checked():
+    #                checkbox.uncheck()
 
-                return Response({'status': 'success', 'message': f'{title} has been {action}ed.'})
+    #            return Response({'status': 'success', 'message': f'{title} has been {action}ed.'})
+    #        except Exception as e:
+    #            return Response({'status': 'error', 'message': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+    #    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    # Process each checkbox action in the request
+                responses = []
+                for checkbox_action in serializer.validated_data:
+                    title = checkbox_action['title']
+                    action = checkbox_action['action']
+                    checkbox = main_window.child_window(title=title, control_type="CheckBox")
+
+                    # Perform the action based on the request
+                    if action == 'check' and not checkbox.is_checked():
+                        checkbox.check()
+                    elif action == 'uncheck' and checkbox.is_checked():
+                        checkbox.uncheck()
+                    responses.append({'title': title, 'action': action, 'status': 'success'})
+
+                return Response(responses)
             except Exception as e:
                 return Response({'status': 'error', 'message': str(e)}, status=status.HTTP_400_BAD_REQUEST)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
