@@ -4,5 +4,5 @@ from django.urls import path, include
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api-auth/', include('rest_framework.urls')), # browsable API rest framework
-    path('keypress/', include('keypress.urls')),
+    path('keypress/', include('keypress.urls')), # Checkbox and Key Press API
 ]
