@@ -25,8 +25,13 @@ SECRET_KEY = 'django-insecure-j3-%9e5ztrhb0b)s2exh&1_ucvtufcowy*v44(m6g+%z8tip!$
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+# NOTE:Add your IP address to the ALLOWED_HOSTS list.
+ALLOWED_HOSTS = ['127.0.0.1', 'localhost', '192.168.100.102']
 
+# NOTE: Hosted on port 8000 by default.
+# Arch: open port with: sudo iptables -A INPUT -p tcp --dport 8000 -j ACCEPT
+# Windows 11:  typically involves allowing incoming traffic on port 8000 through the Windows Firewall.
+# Windows: open port with: netsh interface portproxy add v4tov4 listenport=8000 listenaddress=127.0.0.1 connectport=8000 connectaddress=127.0.0.1
 
 # Application definition
 
