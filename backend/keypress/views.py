@@ -2,8 +2,8 @@ from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 import json
 import pyautogui
-from pywinauto.application import Application
 from rest_framework.response import Response
+from pywinauto.application import Application
 from rest_framework.views import APIView
 from rest_framework import status
 from .serializers import CheckboxActionSerializer
@@ -18,10 +18,10 @@ def trigger_key(request):
                 pyautogui.press(key)
                 return JsonResponse({'status': 'success', 'message': f'Key {key} pressed'})
             else:
-                return JsonResponse({'status': 'fail', 'message': 'Key not provided'}, status=400)
+                return JsonResponse({'status': 'fail', 'message': 'Key not provided'}, status=status.HTTP_400_BAD_REQUEST)
         except json.JSONDecodeError:
-            return JsonResponse({'status': 'fail', 'message': 'Invalid JSON'}, status=400)
-    return JsonResponse({'status': 'fail', 'message': 'Invalid request method'}, status=405)
+            return JsonResponse({'status': 'fail', 'message': 'Invalid JSON'}, status=status.HTTP_400_BAD_REQUEST)
+    return JsonResponse({'status': 'fail', 'message': 'Invalid request method'}, status=status.HTTP_405_METHOD_NOT_ALLOWED)
 
 
 class CheckboxControlView(APIView):
