@@ -26,7 +26,14 @@ SECRET_KEY = 'django-insecure-j3-%9e5ztrhb0b)s2exh&1_ucvtufcowy*v44(m6g+%z8tip!$
 DEBUG = True
 
 # NOTE:Add your IP address to the ALLOWED_HOSTS list.
-ALLOWED_HOSTS = ['127.0.0.1', 'localhost', '192.168.100.102']
+# Allow any host.
+ALLOWED_HOSTS = [
+    'localhost',
+    '127.0.0.1',
+    '0.0.0.0',
+    
+]
+
 
 # NOTE: Hosted on port 8000 by default.
 # Arch: open port with: sudo iptables -A INPUT -p tcp --dport 8000 -j ACCEPT
