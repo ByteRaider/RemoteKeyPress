@@ -38,6 +38,12 @@ class ListApplicationsView(APIView):
     
 
 class SelectApplicationView(APIView):
+    def get(self, request):
+        if 'selected_app' in request.session:
+            return Response({'status': 'success', 'message': f'Application {request.session["selected_app"]} selected.'})
+        else:
+            return Response({'status': 'error', 'message': 'No window application selected.'}, status=status.HTTP_400_BAD_REQUEST)
+
     permission_classes = [AllowAny]
     def post(self, request):
         title = request.data.get('title')

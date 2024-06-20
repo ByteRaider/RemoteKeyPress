@@ -7,7 +7,5 @@ urlpatterns = [
     path('list-applications/', views.ListApplicationsView.as_view(), name='list-applications'),
     path('select-application/', views.SelectApplicationView.as_view(), name='select-application'),
     path('find-descendants/', views.FindDescendantsView.as_view(), name='find-descendants'),
-
-    #TODO: Fix get
-    path('checkbox/', views.CheckboxControlView.as_view(), name='checkbox'),
+    
 ]
