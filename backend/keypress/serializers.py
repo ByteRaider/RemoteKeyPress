@@ -6,3 +6,8 @@ class CheckboxActionSerializer(serializers.Serializer):
 
 class ApplicationListSerializer(serializers.Serializer):
     windows = serializers.ListField(child=serializers.CharField(max_length=255))
+
+class WindowSerializer(serializers.Serializer):
+    title = serializers.CharField(max_length=255)
+    class_name = serializers.CharField(max_length=255)
+    handle = serializers.IntegerField()
