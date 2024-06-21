@@ -6,6 +6,7 @@ urlpatterns = [
     path('trigger/', views.trigger_key, name='trigger_key'),
     path('list-applications/', views.ListApplicationsView.as_view(), name='list-applications'),
     path('select-application/', views.SelectApplicationView.as_view(), name='select-application'),
-    path('find-descendants/', views.FindDescendantsView.as_view(), name='find-descendants'),
-    
+    path('descendants/', views.FindDescendantsView.as_view(), name='descendants'),
+    path('application-windows/', views.ApplicationWindowsView.as_view(), name='application-windows'),
+    path('control-identifiers/', views.ControlIdentifiersView.as_view(), name='control-identifiers'),
 ]

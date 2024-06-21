@@ -9,9 +9,10 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework import status
 from rest_framework.permissions import AllowAny
-from .serializers import CheckboxActionSerializer, ApplicationListSerializer, WindowDescendantsSerializer
+from .serializers import ApplicationListSerializer, WindowSerializer
 
 @csrf_exempt
+# API to trigger a key press 
 def trigger_key(request):
     if request.method == 'POST':
         try:
@@ -26,6 +27,7 @@ def trigger_key(request):
             return JsonResponse({'status': 'fail', 'message': 'Invalid JSON'}, status=status.HTTP_400_BAD_REQUEST)
     return JsonResponse({'status': 'fail', 'message': 'Invalid request method'}, status=status.HTTP_405_METHOD_NOT_ALLOWED)
 
+# API to list all applications in the desktop 
 class ListApplicationsView(APIView):
     permission_classes = [AllowAny]
     def get(self, request):
@@ -36,31 +38,63 @@ class ListApplicationsView(APIView):
         serializer = ApplicationListSerializer({'windows': window_titles})
         return Response(serializer.data)
     
-
+# API to select an application 
 class SelectApplicationView(APIView):
     def get(self, request):
         if 'selected_app' in request.session:
             return Response({'status': 'success', 'message': f'Application {request.session["selected_app"]} selected.'})
         else:
-            return Response({'status': 'error', 'message': 'No window application selected.'}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({'status': 'error', 'message': 'No  application window is selected.'}, status=status.HTTP_400_BAD_REQUEST)
 
     permission_classes = [AllowAny]
     def post(self, request):
-        title = request.data.get('title')
+        if 'selected_app' in request.session:
+            del request.session['selected_app']
+        title_found = request.data.get('title')
+        title = title_found.replace('0', '').replace('1', '').replace('2', '').replace('3', '').replace('4', '').replace('5', '').replace('6', '').replace('7', '').replace('8', '').replace('9', '').replace(',', '').replace('.', '')
+
         try:
-            app = Application().connect(title=title)
+            app = Application().connect(best_match=title)
+            if not app:
+                return Response({'status': 'error', 'message': 'Application not found.'}, status=status.HTTP_404_NOT_FOUND)
             request.session['selected_app'] = title
             return Response({'status': 'success', 'message': f'Application {title} selected.'})
         except Exception as e:
             return Response({'status': 'error', 'message': str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
-class FindDescendantsView(APIView):
+# API to find all windows in the application
+class ApplicationWindowsView(APIView):
     permission_classes = [AllowAny]
 
     def get(self, request):
+        if 'selected_app' not in request.session:
+            return Response({'status': 'error', 'message': 'No application window is selected, maybe try "/keypress/select-application/" instead'}, status=status.HTTP_400_BAD_REQUEST)
+
+        app_title = request.session.get('selected_app')
+        app = Application().connect(best_match=app_title)
+        windows = app.windows()
+
+        window_data = [{
+            'title': window.window_text(),
+            'class_name': window.friendly_class_name(),
+            'handle': window.handle
+        } for window in windows]
+
+        serializer = WindowSerializer(window_data, many=True)
+
+        return Response({'status': 'success', 'windows': serializer.data})
+
+# API to find all descendants of the main window
+class FindDescendantsView(APIView):
+    permission_classes = [AllowAny]
+    # Find all descendants of the main window
+    def get(self, request):
         try:
             # Connect to the application
-            app_title = 'Rise of Kingdoms Bot 1.0.5.4'
+            #app_title = 'Rise of Kingdoms Bot 1.0.5.4'
+            if 'selected_app' not in request.session:
+                return Response({'status': 'error', 'message': 'No application window is selected, maybe try "/keypress/select-application/" instead'}, status=status.HTTP_400_BAD_REQUEST)
+            app_title = request.session.get('selected_app')
             app = Application().connect(best_match=app_title)
             main_window = app.window(best_match=app_title)
             
@@ -70,7 +104,11 @@ class FindDescendantsView(APIView):
 
             # Find all descendants of the main window and append to descendants list
             for descendant in descendants_raw:
-                descendant_info = {'title': descendant.window_text()}
+
+
+                descendant_info = {}
+                if hasattr(descendant, 'title'):
+                    descendant_info['title'] = descendant.title() or descendant.window_text()
                 if hasattr(descendant, 'control_type'):
                     descendant_info['control_type'] = descendant.control_type()
                 if hasattr(descendant, 'automation_id'):
@@ -93,8 +131,8 @@ class FindDescendantsView(APIView):
                     descendant_info['handle'] = descendant.handle
                 
                 descendants.append(descendant_info)
-
             # Return the data as a response
             return Response({'status': 'success', 'descendants': descendants})
         except Exception as e:
             return Response({'status': 'error', 'message': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
