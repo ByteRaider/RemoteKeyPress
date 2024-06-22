@@ -10,6 +10,9 @@ from rest_framework.views import APIView
 from rest_framework import status
 from rest_framework.permissions import AllowAny
 from .serializers import ApplicationListSerializer, WindowSerializer
+import time
+
+from .services.window_manager import WindowManager
 
 @csrf_exempt
 # API to trigger a key press 
@@ -40,27 +43,39 @@ class ListApplicationsView(APIView):
     
 # API to select an application 
 class SelectApplicationView(APIView):
+    
     def get(self, request):
+    # Returns selected application
+     # Return a list of handles of all the top level windows in the application
         if 'selected_app' in request.session:
+            app = Application().connect(best_match=request.session['selected_app'])
+            window = app.window(best_match=request.session['selected_app'])
+            app.top_window().set_focus()
+            window.move_window(0, 0)
             return Response({'status': 'success', 'message': f'Application {request.session["selected_app"]} selected.'})
         else:
-            return Response({'status': 'error', 'message': 'No  application window is selected.'}, status=status.HTTP_400_BAD_REQUEST)
-
+            return Response({'status': 'error', 'message': 'No application window is selected.'}, status=status.HTTP_400_BAD_REQUEST)
+        
     permission_classes = [AllowAny]
     def post(self, request):
         if 'selected_app' in request.session:
             del request.session['selected_app']
-        title_found = request.data.get('title')
-        title = title_found.replace('0', '').replace('1', '').replace('2', '').replace('3', '').replace('4', '').replace('5', '').replace('6', '').replace('7', '').replace('8', '').replace('9', '').replace(',', '').replace('.', '')
+        title_raw = request.data.get('title')
+        title = title_raw.replace('0', '').replace('1', '').replace('2', '').replace('3', '').replace('4', '').replace('5', '').replace('6', '').replace('7', '').replace('8', '').replace('9', '').replace(',', '').replace('.', '')
 
         try:
             app = Application().connect(best_match=title)
             if not app:
                 return Response({'status': 'error', 'message': 'Application not found.'}, status=status.HTTP_404_NOT_FOUND)
             request.session['selected_app'] = title
+            window = app.window(best_match=request.session['selected_app'])
+            app.top_window().set_focus()
+            window.move_window(0, 0)
             return Response({'status': 'success', 'message': f'Application {title} selected.'})
         except Exception as e:
             return Response({'status': 'error', 'message': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+    
+    # Brings  selected application to the front
 
 # API to find all windows in the application
 class ApplicationWindowsView(APIView):
@@ -135,4 +150,6 @@ class FindDescendantsView(APIView):
             return Response({'status': 'success', 'descendants': descendants})
         except Exception as e:
             return Response({'status': 'error', 'message': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+
 

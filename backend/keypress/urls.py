@@ -8,5 +8,4 @@ urlpatterns = [
     path('select-application/', views.SelectApplicationView.as_view(), name='select-application'),
     path('descendants/', views.FindDescendantsView.as_view(), name='descendants'),
     path('application-windows/', views.ApplicationWindowsView.as_view(), name='application-windows'),
-    path('control-identifiers/', views.ControlIdentifiersView.as_view(), name='control-identifiers'),
 ]
