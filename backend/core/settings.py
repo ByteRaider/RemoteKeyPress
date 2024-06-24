@@ -31,7 +31,7 @@ ALLOWED_HOSTS = [
     'localhost',
     '127.0.0.1',
     '0.0.0.0',
-    
+    '94.130.68.81'
     
 ]
 
@@ -52,7 +52,6 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework',
     'keypress',
-    'gui_navigator',
 ]
 
 MIDDLEWARE = [
